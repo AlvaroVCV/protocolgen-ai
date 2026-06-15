@@ -6,7 +6,7 @@
 
 Aplicación web para generar protocolos de simulación clínica con inteligencia artificial. Diseñada siguiendo estándares de INACSL/SSH, con énfasis en seguridad psicológica, contrato de ficción, ingeniería pedagógica inversa y equidad, diversidad e inclusión (EDI).
 
-**Arquitectura desacoplada:** la capa de negocio no depende de ningún proveedor de IA en particular. Funciona con cualquier API compatible con OpenAI (OpenAI, Anthropic, Azure, Ollama, LM Studio) y también incluye un adapter opcional para Google Gemini.
+**Arquitectura desacoplada:** la capa de negocio no depende de ningún proveedor de IA en particular. Funciona con OpenAI, Anthropic, Azure, Ollama, LM Studio, Kimi (Moonshot) y otros.
 
 ---
 
@@ -20,7 +20,7 @@ Aplicación web para generar protocolos de simulación clínica con inteligencia
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS
 - **Backend:** Express, TypeScript
-- **IA:** Arquitectura de providers desacoplada (OpenAI-compatible por defecto, Gemini opcional)
+- **IA:** Arquitectura de providers desacoplada (OpenAI-compatible por defecto, Kimi y Gemini opcionales)
 - **Calidad:** ESLint, Prettier, Vitest, Testing Library
 
 ---
@@ -143,7 +143,7 @@ server/
    ```typescript
    import { MiProvider } from './miprovider/provider';
 
-   export type SupportedProvider = 'openai-compatible' | 'gemini' | 'miprovider';
+   export type SupportedProvider = 'openai-compatible' | 'kimi' | 'gemini' | 'miprovider';
 
    case 'miprovider':
      return new MiProvider({ apiKey: config.apiKey });
@@ -157,6 +157,20 @@ server/
    ```
 
 ---
+
+## 🌙 Uso con Kimi (Moonshot)
+
+Para usar Kimi, solo necesitas tu clave de API de Moonshot. No requiere dependencias adicionales.
+
+Configura `.env`:
+
+```env
+LLM_PROVIDER=kimi
+LLM_API_KEY=sk-tu_clave_de_kimi
+PORT=3001
+```
+
+Obtén tu clave en: https://platform.moonshot.cn
 
 ## ♊ Uso opcional con Google Gemini
 
@@ -187,6 +201,7 @@ Incluye tests para:
 - El servicio de llamadas al backend (`services/protocolService` del frontend)
 - Renderizado básico del formulario (`components/TopicForm`)
 - Lógica de generación con provider mock (`server/core/protocolGenerator`)
+- Provider de Kimi (`server/providers/kimi/provider`)
 - Conversión de schema a formato Gemini (`server/providers/gemini/schemaConverter`)
 
 ---

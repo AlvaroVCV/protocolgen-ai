@@ -1,6 +1,6 @@
 import type { ILLMProvider } from './types';
 
-export type SupportedProvider = 'openai-compatible' | 'gemini';
+export type SupportedProvider = 'openai-compatible' | 'kimi' | 'gemini';
 
 export interface ProviderFactoryConfig {
   provider: SupportedProvider;
@@ -25,6 +25,11 @@ export const createProvider = async (config: ProviderFactoryConfig): Promise<ILL
     case 'openai-compatible': {
       const { OpenAIProvider } = await import('./openai/provider');
       return new OpenAIProvider({ apiKey: config.apiKey, baseUrl: config.baseUrl });
+    }
+
+    case 'kimi': {
+      const { KimiProvider } = await import('./kimi/provider');
+      return new KimiProvider({ apiKey: config.apiKey, baseUrl: config.baseUrl });
     }
 
     case 'gemini': {

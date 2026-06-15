@@ -13,6 +13,7 @@ const PORT = process.env.PORT ?? 3001;
  *
  * LLM_PROVIDER puede ser:
  * - 'openai-compatible' (por defecto, usa fetch nativo, sin dependencias extra)
+ * - 'kimi' (Moonshot, usa fetch nativo)
  * - 'gemini' (requiere instalar @google/genai como dependencia opcional)
  *
  * Para agregar más proveedores, mira `server/providers/factory.ts`.
