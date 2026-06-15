@@ -1,0 +1,5 @@
+
+{
+  "name": "ProtocolGen AI",
+  "description": "An AI-powered application for generating comprehensive clinical simulation protocols based on evidence-based pedagogical principles. Users can define a clinical topic and fidelity level, and the AI produces a detailed protocol covering case details, learning objectives, resources, pre-briefing, debriefing, and a full simulation script."
+}
