@@ -6,7 +6,7 @@
 
 Aplicación web para generar protocolos de simulación clínica con inteligencia artificial. Diseñada siguiendo estándares de INACSL/SSH, con énfasis en seguridad psicológica, contrato de ficción, ingeniería pedagógica inversa y equidad, diversidad e inclusión (EDI).
 
-**Arquitectura desacoplada:** la capa de negocio no depende de ningún proveedor de IA en particular. Puedes usar Gemini, OpenAI, Anthropic, Ollama, LM Studio o cualquier otro modelo implementando una interfaz sencilla.
+**Arquitectura desacoplada:** la capa de negocio no depende de ningún proveedor de IA en particular. Funciona con cualquier API compatible con OpenAI (OpenAI, Anthropic, Azure, Ollama, LM Studio) y también incluye un adapter opcional para Google Gemini.
 
 ---
 
@@ -20,7 +20,7 @@ Aplicación web para generar protocolos de simulación clínica con inteligencia
 
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS
 - **Backend:** Express, TypeScript
-- **IA:** Arquitectura de providers desacoplada (incluye adapter para Gemini y template para OpenAI-compatible)
+- **IA:** Arquitectura de providers desacoplada (OpenAI-compatible por defecto, Gemini opcional)
 - **Calidad:** ESLint, Prettier, Vitest, Testing Library
 
 ---
@@ -39,23 +39,20 @@ npm install
 cp .env.example .env
 ```
 
-Edita `.env`:
+Edita `.env` con tu proveedor y clave:
 
 ```env
-# Proveedor de IA: gemini | openai-compatible
-LLM_PROVIDER=gemini
-LLM_API_KEY=tu_api_key_aqui
-PORT=3001
-```
-
-Para **Gemini**, obtén tu clave en [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-Para un proveedor **OpenAI-compatible** (OpenAI, Azure, Ollama, LM Studio, etc.):
-
-```env
+# OpenAI, Azure, Anthropic o similar
 LLM_PROVIDER=openai-compatible
 LLM_API_KEY=tu_api_key_aqui
-LLM_BASE_URL=http://localhost:11434/v1  # ejemplo para Ollama
+LLM_BASE_URL=https://api.openai.com/v1
+
+# Ollama local (sin clave)
+# LLM_PROVIDER=openai-compatible
+# LLM_API_KEY=dummy
+# LLM_BASE_URL=http://localhost:11434/v1
+
+PORT=3001
 ```
 
 ### 3. Iniciar frontend y backend
@@ -67,8 +64,6 @@ npm run dev
 Esto ejecuta simultáneamente:
 - Backend en `http://localhost:3001`
 - Frontend en `http://localhost:3000`
-
-El frontend proxya automáticamente las peticiones `/api` al backend.
 
 ---
 
@@ -89,22 +84,22 @@ El frontend proxya automáticamente las peticiones `/api` al backend.
 
 ---
 
-## 🏗️ Arquitectura del backend (desacoplada)
+## 🏗️ Arquitectura del backend
 
 ```
 server/
 ├── index.ts                 # Entry point: configura el provider y arranca Express
 ├── providers/
 │   ├── types.ts             # Interfaz ILLMProvider: contrato que cumple cualquier IA
-│   ├── factory.ts           # Crea el provider según LLM_PROVIDER
-│   ├── gemini/
-│   │   ├── provider.ts      # Implementación para Google Gemini
-│   │   └── schemaConverter.ts  # Adapta nuestro JSON Schema al formato de Gemini
-│   └── openai/
-│       └── provider.ts      # Template para APIs tipo OpenAI
+│   ├── factory.ts           # Crea el provider según LLM_PROVIDER (imports dinámicos)
+│   ├── openai/
+│   │   └── provider.ts      # Provider por defecto, usa fetch nativo
+│   └── gemini/
+│       ├── provider.ts      # Adapter opcional para Google Gemini
+│       └── schemaConverter.ts
 ├── core/
 │   ├── protocolSchema.ts    # JSON Schema "fuente de verdad" del protocolo
-│   ├── promptBuilder.ts     # Construye los prompts (conocimiento del dominio)
+│   ├── promptBuilder.ts     # Construye los prompts
 │   └── protocolGenerator.ts # Orquesta generación usando cualquier provider
 ```
 
@@ -148,7 +143,7 @@ server/
    ```typescript
    import { MiProvider } from './miprovider/provider';
 
-   export type SupportedProvider = 'gemini' | 'openai-compatible' | 'miprovider';
+   export type SupportedProvider = 'openai-compatible' | 'gemini' | 'miprovider';
 
    case 'miprovider':
      return new MiProvider({ apiKey: config.apiKey });
@@ -163,6 +158,25 @@ server/
 
 ---
 
+## ♊ Uso opcional con Google Gemini
+
+Si prefieres usar Gemini en lugar del provider por defecto:
+
+```bash
+npm install @google/genai
+```
+
+Y configura `.env`:
+
+```env
+LLM_PROVIDER=gemini
+LLM_API_KEY=tu_clave_de_gemini
+```
+
+> Nota: `@google/genai` se incluye en `optionalDependencies` y se instala por defecto. Si quieres un proyecto más ligero sin Gemini, instala con `npm install --no-optional`.
+
+---
+
 ## 🧪 Tests
 
 ```bash
@@ -172,6 +186,8 @@ npm test
 Incluye tests para:
 - El servicio de llamadas al backend (`services/protocolService` del frontend)
 - Renderizado básico del formulario (`components/TopicForm`)
+- Lógica de generación con provider mock (`server/core/protocolGenerator`)
+- Conversión de schema a formato Gemini (`server/providers/gemini/schemaConverter`)
 
 ---
 
@@ -188,7 +204,7 @@ Incluye tests para:
 
 Para producción, despliega el backend en un servicio serverless (Vercel Functions, Netlify Functions, Cloud Run, Railway, etc.) o en un VPS. El frontend puede desplegarse en Vercel/Netlify configurando el proxy inverso o las variables de entorno de API route.
 
-Recuerda configurar `LLM_PROVIDER` y `LLM_API_KEY` en el entorno de producción.
+Recuerda configurar `LLM_PROVIDER`, `LLM_API_KEY` y `LLM_BASE_URL` en el entorno de producción.
 
 ---
 

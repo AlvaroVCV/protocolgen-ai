@@ -1,13 +1,11 @@
-import { GeminiProvider } from './gemini/provider';
-import { OpenAIProvider } from './openai/provider';
 import type { ILLMProvider } from './types';
 
-export type SupportedProvider = 'gemini' | 'openai-compatible';
+export type SupportedProvider = 'openai-compatible' | 'gemini';
 
 export interface ProviderFactoryConfig {
   provider: SupportedProvider;
   apiKey: string;
-  /** Solo requerido para providers OpenAI-compatible autoalojados. */
+  /** Solo requerido para providers autoalojados o endpoints personalizados. */
   baseUrl?: string;
 }
 
@@ -16,19 +14,23 @@ export interface ProviderFactoryConfig {
  *
  * Para agregar un nuevo proveedor:
  * 1. Crea su implementación de `ILLMProvider` en `server/providers/<nombre>/`.
- * 2. Importa la clase aquí.
- * 3. Añade un nuevo caso en el `switch`.
+ * 2. Añade un caso aquí con importación dinámica si requiere dependencias opcionales.
+ * 3. Añade el nombre a `SupportedProvider`.
+ *
+ * Las importaciones dinámicas evitan que el proyecto dependa de bibliotecas
+ * específicas que el usuario no vaya a utilizar.
  */
-export const createProvider = (config: ProviderFactoryConfig): ILLMProvider => {
+export const createProvider = async (config: ProviderFactoryConfig): Promise<ILLMProvider> => {
   switch (config.provider) {
-    case 'gemini':
-      return new GeminiProvider({ apiKey: config.apiKey });
+    case 'openai-compatible': {
+      const { OpenAIProvider } = await import('./openai/provider');
+      return new OpenAIProvider({ apiKey: config.apiKey, baseUrl: config.baseUrl });
+    }
 
-    case 'openai-compatible':
-      return new OpenAIProvider({
-        apiKey: config.apiKey,
-        baseUrl: config.baseUrl,
-      });
+    case 'gemini': {
+      const { GeminiProvider } = await import('./gemini/provider');
+      return new GeminiProvider({ apiKey: config.apiKey });
+    }
 
     default:
       // TypeScript fuerza el manejo de todos los valores de SupportedProvider,
