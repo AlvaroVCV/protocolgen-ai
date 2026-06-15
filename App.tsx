@@ -1,5 +1,6 @@
 import React from 'react';
-import { ProtocolProvider, useProtocol } from './contexts/ProtocolContext';
+import { ProtocolProvider } from './contexts/ProtocolContext';
+import { useProtocol } from './hooks/useProtocol';
 import Header from './components/Header';
 import TopicForm from './components/TopicForm';
 import ProtocolOutput from './components/ProtocolOutput';

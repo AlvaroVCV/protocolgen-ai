@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import saveAs from 'file-saver';
-import { asBlob as htmlToDocxBlob } from 'html-docx-js';
 import { useProtocol } from '../hooks/useProtocol';
 import type { Protocol, VitalSigns } from '../types';
 
@@ -247,7 +246,7 @@ const ProtocolOutput: React.FC = () => {
         ${printableElement.innerHTML}
         </body></html>
       `;
-      const blob = htmlToDocxBlob(htmlContent);
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
       saveAs(blob, `${document.title}.docx`);
     } else if (format === 'txt') {
       const text = printableElement.innerText;
